@@ -15,9 +15,6 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     QScopedPointer<QApplication> app(createApplication(argc, argv));
     QScopedPointer<QmlApplicationViewer> viewer(QmlApplicationViewer::create());
 
-    qmlRegisterType<Message>("RPConversation", 1, 0, "ConvMessage");
-    qmlRegisterType<Conversation>("RPConversation", 1, 0, "Conversation");
-
     QDeclarativeContext *ctxt = viewer->rootContext();
     rp.setContext(ctxt);
     ctxt->setContextProperty("RPClient", &rp);

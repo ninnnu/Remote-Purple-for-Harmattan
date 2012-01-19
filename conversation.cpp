@@ -1,26 +1,25 @@
 #include "conversation.h"
 
-Message::Message(QString msg, QString sndr, int ts, bool sent, QDeclarativeItem *parent) :  QDeclarativeItem(parent), message_(msg), sender_(sndr), timestamp_(ts), sent_(sent) { }
-
-Conversation::Conversation(int id, ContactItem* partner, Account* account, QDeclarativeItem *parent) :
-    QDeclarativeItem(parent), id_(id), partner_(partner), messages_(), account_(account)
+Conversation::Conversation(int id, ContactItem* partner, Account* account, QObject *parent) :
+    QObject(parent), id_(id), partner_(partner), messages_(), account_(account)
 {
-
+    messages_ = new ListModel(new Message);
 }
 
-QDeclarativeListProperty<Message> Conversation::getMessages() {
-    return QDeclarativeListProperty<Message>(this, messages_);
+Conversation::~Conversation() {
+    messages_->clear();
+    delete messages_;
+    messages_ = NULL;
+}
+
+ListModel* Conversation::getMessages() {
+    return messages_;
 }
 
 void Conversation::addMessage(QString message, QString sender, int timestamp, bool sent){
     if(timestamp == 0) {
         timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
     }
-    messages_.append(new Message(message, sender, timestamp, sent, this));
+    messages_->appendRow(new Message(message, sender, timestamp, sent, this));
     emit DataChanged();
 }
-
-int Conversation::messageCount() {
-    return messages_.length();
-}
-
