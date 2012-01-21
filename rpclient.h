@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void send(QByteArray payload);
     ListModel* getContactlist();
     Conversation* getConversation(int id);
+    ListModel* getConversationlist();
     Q_INVOKABLE void setBuddyConversation(int buddyid);
     Q_INVOKABLE void setConversation(int id);
     void setContext(QDeclarativeContext*);
@@ -62,6 +63,7 @@ private:
     QMap<int, Account*> accounts_;
     QMap<int, Conversation*> conversations_;
     ListModel* Contactlist_;
+    ListModel* Conversationlist_;
     QString password_;
 
     QNetworkAccessManager *networkManager_;

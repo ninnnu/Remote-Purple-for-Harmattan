@@ -19,6 +19,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     rp.setContext(ctxt);
     ctxt->setContextProperty("RPClient", &rp);
     ctxt->setContextProperty("ContactList", rp.getContactlist());
+    ctxt->setContextProperty("ConversationList", rp.getConversationlist());
     viewer->setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
     viewer->setMainQmlFile(QLatin1String("qml/RemotePurple/main.qml"));
     viewer->showExpanded();

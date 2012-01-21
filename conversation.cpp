@@ -1,7 +1,7 @@
 #include "conversation.h"
 
 Conversation::Conversation(int id, ContactItem* partner, Account* account, QObject *parent) :
-    QObject(parent), id_(id), partner_(partner), messages_(), account_(account)
+    ListItem(parent), id_(id), partner_(partner), messages_(), account_(account)
 {
     messages_ = new ListModel(new Message);
 }
@@ -22,4 +22,36 @@ void Conversation::addMessage(QString message, QString sender, int timestamp, bo
     }
     messages_->appendRow(new Message(message, sender, timestamp, sent, this));
     emit DataChanged();
+}
+
+QHash<int, QByteArray> Conversation::roleNames() const
+{
+  QHash<int, QByteArray> names;
+  names[IdRole] = "convID";
+  names[PartnerNameRole] = "partnerName";
+  names[AccountNameRole] = "accountName";
+  names[MessagesRole] = "messages";
+  return names;
+}
+
+QVariant Conversation::data(int role) const
+{
+  switch(role) {
+  case IdRole:
+      return convID();
+  case PartnerNameRole:
+    return partnerName();
+  case AccountNameRole:
+    return accountName();
+  default:
+    return QVariant();
+  }
+}
+
+QString Conversation::accountName() const {
+    return account_->name;
+}
+
+QString Conversation::partnerName() const {
+    return partner_->name();
 }

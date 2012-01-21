@@ -5,6 +5,7 @@
 RPClient::RPClient() : expectingBytes_(0),  sockPayload_(), sockPayloadBA_(), password_(""), waitingForStatus_(false) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
     Contactlist_ = new ListModel(new ContactItem);
+    Conversationlist_ = new ListModel(new Conversation);
     networkManager_ = new QNetworkAccessManager(this);
 }
 
@@ -123,6 +124,7 @@ void RPClient::listen() {
                     conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp, message.sent());
                 }
                 conversations_[conversation.conversationid()] = conv;
+                Conversationlist_->appendRow(conv);
                 break;
             }
         }
@@ -140,7 +142,9 @@ void RPClient::listen() {
                 break;
             }
         }
-        delete conversations_.value(conversation.conversationid());
+        QModelIndex idx = Conversationlist_->indexFromItem(conversations_.value(conversation.conversationid()));
+        qDebug() << "Removing row:" << idx.row();
+        Conversationlist_->removeRow(idx.row()); // Does deletion, too.
         conversations_.remove(conversation.conversationid());
         emit deletedConversation(conversation.conversationid());
         return;
@@ -201,6 +205,10 @@ ListModel* RPClient::getContactlist() {
     return Contactlist_;
 }
 
+ListModel* RPClient::getConversationlist() {
+    return Conversationlist_;
+}
+
 int RPClient::_pbint2int(google::protobuf::int32 i) {
     int tmp = i;
     return tmp;
@@ -248,6 +256,7 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
                     conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp, message.sent());
                 }
                 conversations_[conversation.conversationid()] = conv;
+                Conversationlist_->appendRow(conv);
                 break;
             }
         }

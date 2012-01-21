@@ -1,13 +1,13 @@
-import QtQuick 1.1
+import QtQuick 1.0
 import com.nokia.meego 1.0
 
 Page {
-    property int selectedContactID: -1
+    property int selectedConversationID: -1
     Component {
-        id: contactDelegate
+        id: conversationDelegate
         Rectangle {
-            id: contactDelegateRectangle
-            height: contactDelegateText.height * 1.5 + blueline.height
+            id: conversationDelegateRectangle
+            height: conversationDelegateText.height * 1.5 + blueline.height
             width: parent.width
             Rectangle {
                 id: blueline
@@ -19,33 +19,32 @@ Page {
             }
             Text {
                 font.pixelSize: 24
-                id: contactDelegateText
+                id: conversationDelegateText
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                color: (status == "online") ? "green" : "red";
-                text: "<b>" + alias + "</b>"
+                text: "<b>" + partnerName + "</b> (" + accountName + ")";
             }
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    selectedContactID = contactID;
+                    selectedConversationID = convID;
                 }
             }
             states: [
                 State {
                     name: "selected"
-                    when: (contactID==selectedContactID)
-                    PropertyChanges {target: contactDelegateRectangle; color: "yellow"}
+                    when: (convID==selectedConversationID)
+                    PropertyChanges {target: conversationDelegateRectangle; color: "yellow"}
                 }
             ]
         }
     }
 
     ListView {
-        id: contactListView
+        id: conversationListView
         anchors.fill: parent
-        model: ContactList
-        delegate: contactDelegate
+        model: ConversationList
+        delegate: conversationDelegate
     }
 
     ToolBarLayout {
@@ -63,13 +62,13 @@ Page {
         MenuLayout {
             MenuItem {
                 text: qsTr("Show conversation");
-                onClicked: { RPClient.setBuddyConversation(selectedContactID);
+                onClicked: { RPClient.setConversation(selectedConversationID);
                              pageStack.replace(Qt.resolvedUrl("Conversation.qml"));
                            }
             }
             MenuItem {
-                text: qsTr("Current conversations");
-                onClicked: pageStack.replace(Qt.resolvedUrl("Conversations.qml"));
+                text: qsTr("Show buddylist");
+                onClicked: pageStack.replace(Qt.resolvedUrl("BuddyList.qml"));
             }
         }
     }
