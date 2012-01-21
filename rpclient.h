@@ -33,13 +33,13 @@ public:
     explicit RPClient();
     virtual ~RPClient();
     Q_INVOKABLE bool connectTo(QString host, QString password);
-    Q_INVOKABLE void send(QString payload);
+    Q_INVOKABLE void send(QByteArray payload);
     ListModel* getContactlist();
     Conversation* getConversation(int id);
     Q_INVOKABLE void setBuddyConversation(int buddyid);
     Q_INVOKABLE void setConversation(int id);
     void setContext(QDeclarativeContext*);
-
+    void createConversation(qint32 accountID, qint32 buddyID);
 signals:
     void newIM(int conversationID);
     void newConversation(int conversationID);
@@ -57,6 +57,7 @@ private:
     QByteArray sockPayloadBA_;
 
     QTimer* pingtimer_;
+    int timeSincePong_;
 
     QMap<int, Account*> accounts_;
     QMap<int, Conversation*> conversations_;
@@ -70,6 +71,7 @@ private:
     int _pbint2int(google::protobuf::int32 i);
 
     QDeclarativeContext* mainctxt_;
+
 };
 
 #endif // RPCLIENT_H

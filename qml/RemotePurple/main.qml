@@ -4,7 +4,7 @@ import com.nokia.meego 1.0
 PageStackWindow {
     id: appWindow
 
-    property int selectedConversationID = -1;
+    property int selectedConversationID: -1;
 
     initialPage: mainPage
 

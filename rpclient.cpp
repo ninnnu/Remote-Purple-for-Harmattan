@@ -23,19 +23,20 @@ bool RPClient::connectTo(QString host, QString password) {
     pingtimer_ = new QTimer(this);
     connect(pingtimer_, SIGNAL(timeout()), this, SLOT(sendping()));
     pingtimer_->start(300000); // 300k milliseconds = 5min.
+    timeSincePong_ = QDateTime::currentMSecsSinceEpoch() / 1000;
     // connect(sock, SIGNAL(error(QAbstractSocket::SocketError));
     return true;
 }
 
-void RPClient::send(QString payload) {
+void RPClient::send(QByteArray payload) {
     QString len;
     len.setNum(payload.length());
-    payload = len+";"+payload;
+    len.append(";");
+    payload.prepend(len.toUtf8());
+
     qDebug() << "Sending: " << payload;
-    sock->write(payload.toUtf8());
-    while(sock->bytesToWrite() > 0) {
-        sock->flush();
-    }
+    sock->write(payload);
+    sock->waitForBytesWritten(-1);
 }
 
 Conversation* RPClient::getConversation(int id) {
@@ -46,15 +47,32 @@ void RPClient::setBuddyConversation(int buddyid) {
     QMap<int, Account*>::iterator accIter(accounts_.begin());
     for(; accIter != accounts_.end(); accIter++) {
         if(accIter.value()->contacts.find(buddyid) != accIter.value()->contacts.end()) {
+            if(accIter.value()->contacts.value(buddyid)->conversation() == NULL) {
+                QEventLoop loop;
+                createConversation(accIter.key(), buddyid);
+                connect(this, SIGNAL(newConversation(int)), &loop, SLOT(quit()));
+                loop.exec();
+            }
             mainctxt_->setContextProperty("CurrentConversation",
-                                          QVariant::fromValue<QObject*>(accIter.value()->contacts.value(buddyid)->conversation()));
+                                          accIter.value()->contacts.value(buddyid)->conversation());
+            mainctxt_->setContextProperty("CurrentConvMessages", accIter.value()->contacts.value(buddyid)->conversation()->getMessages());
             return;
         }
     }
 }
 
+void RPClient::createConversation(qint32 accountID, qint32 buddyID) {
+    purple::Conversation conv;
+    conv.set_conversationid(buddyID);
+    conv.set_accountid(accountID);
+    QByteArray payload(conv.SerializeAsString().c_str(), conv.ByteSize());
+    payload.prepend("NewConversation;");
+    send(payload);
+}
+
 void RPClient::setConversation(int convid) {
-    mainctxt_->setContextProperty("CurrentConversation", QVariant::fromValue<QObject*>(getConversation(convid)));
+    mainctxt_->setContextProperty("CurrentConversation", getConversation(convid));
+    mainctxt_->setContextProperty("CurrentConvMessages", getConversation(convid)->getMessages());
 }
 
 void RPClient::setContext(QDeclarativeContext* newctxt) {
@@ -92,7 +110,8 @@ void RPClient::listen() {
         Account* account = accounts_[conversation.accountid()];
         QMap<int, ContactItem*>::iterator iter = account->contacts.begin();
         for(; iter != account->contacts.end(); ++iter) {
-            if(iter.value()->name().toStdString() == conversation.name()) { // Conversation-buddy found
+            QString fixedName = QString(conversation.name().substr(0, conversation.name().rfind("/")).c_str()); // Remove the /randomID from the end XMPP-conversations.
+            if(iter.value()->name() == fixedName) { // Conversation-buddy found
                 Conversation* conv = new Conversation(_pbint2int(conversation.conversationid()), iter.value(), account);
                 iter.value()->setConversation(conv);
                 for(int m = 0; m < conversation.messages_size(); ++m) {
@@ -101,7 +120,7 @@ void RPClient::listen() {
                     if(message.has_timestamp()) {
                         timestamp = message.timestamp();
                     }
-                    conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp);
+                    conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp, message.sent());
                 }
                 conversations_[conversation.conversationid()] = conv;
                 break;
@@ -129,7 +148,7 @@ void RPClient::listen() {
     if(rectype == "IM") {
         purple::IM im;
         im.ParseFromArray(payloadBA, payloadBA.size());
-        conversations_.value(im.conversation())->addMessage(QString(im.message().c_str()), QString(im.sender().c_str()));
+        conversations_.value(im.conversation())->addMessage(QString(im.message().c_str()), QString(im.sender().c_str()), NULL, im.sent());
         emit newIM(im.conversation());
         return;
     }
@@ -145,39 +164,13 @@ void RPClient::listen() {
         return;
     }
     if(rectype == "Pong") {
+        timeSincePong_ = QDateTime::currentMSecsSinceEpoch() / 1000;
         return;
     }
     if(rectype == "") {
 
     }
 }
-
-/*QString RPClient::recv_() {
-    currentlyReceiving_ = true;
-    char buffer[1024] = {0};
-    QString payload = "";
-    sock->read(buffer, 10);
-    payload.append(buffer);
-    qint32 recsize = payload.left(payload.indexOf(";")).toInt();
-    qint32 readbytes = 0;
-    qDebug() << "About to receive" << recsize << "bytes";
-    payload.remove(0, payload.indexOf(";") + 1);
-    while(readbytes < recsize) { // TODO: Change to the protocol's way of receiving stuff.
-        if((recsize - readbytes) > 1024) {
-            readbytes += sock->read(buffer, 1024);
-        }
-        else {
-            readbytes += sock->read(buffer, recsize - readbytes);
-        }
-        qDebug() << readbytes << "/" << recsize;
-        payload.append(buffer);
-    }
-    // Remove now useless size-field
-    qDebug() << "Received" << payload.length() << "bytes";
-    qDebug() << payload;
-    currentlyReceiving_ = false;
-    return payload;
-}*/
 
 bool RPClient::recv_() {
     QByteArray bytearr = sock->readAll();
@@ -201,7 +194,7 @@ bool RPClient::recv_() {
 
 void RPClient::authenticate() {
     qDebug() << "Sending password";
-    send(password_);
+    send(password_.toUtf8());
 }
 
 ListModel* RPClient::getContactlist() {
@@ -237,13 +230,13 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
             qDebug() << "Adding buddy:" << buddy.alias().c_str() << "-" << buddy.buddyid();
         }
     }
-    qDebug() << pb_status.conversations_size();
     for(int i = 0; i < pb_status.conversations_size(); ++i) {
         const purple::Conversation& conversation = pb_status.conversations(i);
         Account* account = accounts_[conversation.accountid()];
         QMap<int, ContactItem*>::iterator iter = account->contacts.begin();
         for(; iter != account->contacts.end(); ++iter) {
-            if(iter.value()->name().toStdString() == conversation.name()) { // Conversation found
+            QString fixedName = QString(conversation.name().substr(0, conversation.name().rfind("/")).c_str()); // Remove the /randomID from the end XMPP-conversations.
+            if(iter.value()->name() == fixedName) { // Conversation found
                 Conversation* conv = new Conversation(_pbint2int(conversation.conversationid()), iter.value(), account);
                 iter.value()->setConversation(conv);
                 for(int m = 0; m < conversation.messages_size(); ++m) {
@@ -252,7 +245,7 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
                     if(message.has_timestamp()) {
                         timestamp = message.timestamp();
                     }
-                    conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp);
+                    conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp, message.sent());
                 }
                 conversations_[conversation.conversationid()] = conv;
                 break;
@@ -262,5 +255,6 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
 }
 
 void RPClient::sendping() {
+
     send("Ping");
 }
