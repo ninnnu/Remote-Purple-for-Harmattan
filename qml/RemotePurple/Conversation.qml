@@ -35,6 +35,7 @@ Page {
         anchors.fill: parent
         model: CurrentConvMessages
         delegate: conversationDelegate
+        Component.onCompleted: positionViewAtEnd();
     }
 
     Rectangle {
@@ -81,7 +82,7 @@ Page {
             }
             MenuItem {
                 text: qsTr("Current conversations");
-                 // onClicked: ???;
+                 onClicked: pageStack.replace(Qt.resolvedUrl("Conversations.qml"));
             }
         }
     }
