@@ -36,7 +36,9 @@ SOURCES += main.cpp \
     rpclient.cpp \
     listmodel.cpp \
     conversation.cpp \
-    contactitem.cpp
+    contactitem.cpp \
+    message.cpp \
+    settings.cpp
 
 PROTOS = purple.proto
 include(protobuf.pri)
@@ -52,7 +54,15 @@ HEADERS += \
     rpclient.h \
     conversation.h \
     listmodel.h \
-    contactitem.h
+    contactitem.h \
+    message.h \
+    settings.h
+
+
+
+
+
+
 
 
 

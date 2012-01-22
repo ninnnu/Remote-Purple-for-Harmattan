@@ -63,9 +63,12 @@ Page {
         MenuLayout {
             MenuItem {
                 text: qsTr("Show conversation");
-                onClicked: { RPClient.setBuddyConversation(selectedContactID);
-                             pageStack.replace(Qt.resolvedUrl("Conversation.qml"));
-                           }
+                onClicked: {
+                    if(selectedContactID != -1) {
+                        RPClient.setBuddyConversation(selectedContactID);
+                        pageStack.replace(Qt.resolvedUrl("Conversation.qml"));
+                    }
+                }
             }
             MenuItem {
                 text: qsTr("Current conversations");

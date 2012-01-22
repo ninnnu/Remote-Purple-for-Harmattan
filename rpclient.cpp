@@ -57,6 +57,7 @@ void RPClient::setBuddyConversation(int buddyid) {
             mainctxt_->setContextProperty("CurrentConversation",
                                           accIter.value()->contacts.value(buddyid)->conversation());
             mainctxt_->setContextProperty("CurrentConvMessages", accIter.value()->contacts.value(buddyid)->conversation()->getMessages());
+            currentConvID_ = accIter.value()->contacts.value(buddyid)->conversation()->convID();
             return;
         }
     }
@@ -74,6 +75,17 @@ void RPClient::createConversation(qint32 accountID, qint32 buddyID) {
 void RPClient::setConversation(int convid) {
     mainctxt_->setContextProperty("CurrentConversation", getConversation(convid));
     mainctxt_->setContextProperty("CurrentConvMessages", getConversation(convid)->getMessages());
+    currentConvID_ = convid;
+}
+
+void RPClient::sendIM(QString msg) {
+    purple::IM newIM;
+    qDebug() << "Sending to" << currentConvID_ << ":" << msg;
+    newIM.set_conversation(currentConvID_);
+    newIM.set_message(msg.toStdString());
+    QByteArray payload(newIM.SerializeAsString().c_str(), newIM.ByteSize());
+    payload.prepend("IM;");
+    send(payload);
 }
 
 void RPClient::setContext(QDeclarativeContext* newctxt) {

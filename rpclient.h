@@ -39,6 +39,7 @@ public:
     ListModel* getConversationlist();
     Q_INVOKABLE void setBuddyConversation(int buddyid);
     Q_INVOKABLE void setConversation(int id);
+    Q_INVOKABLE void sendIM(QString msg);
     void setContext(QDeclarativeContext*);
     void createConversation(qint32 accountID, qint32 buddyID);
 signals:
@@ -65,6 +66,7 @@ private:
     ListModel* Contactlist_;
     ListModel* Conversationlist_;
     QString password_;
+    int currentConvID_;
 
     QNetworkAccessManager *networkManager_;
     bool waitingForStatus_;

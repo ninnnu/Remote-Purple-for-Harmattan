@@ -62,9 +62,12 @@ Page {
         MenuLayout {
             MenuItem {
                 text: qsTr("Show conversation");
-                onClicked: { RPClient.setConversation(selectedConversationID);
-                             pageStack.replace(Qt.resolvedUrl("Conversation.qml"));
-                           }
+                onClicked: {
+                    if(selectedConversationID != -1) {
+                        RPClient.setConversation(selectedConversationID);
+                        pageStack.replace(Qt.resolvedUrl("Conversation.qml"));
+                        }
+                    }
             }
             MenuItem {
                 text: qsTr("Show buddylist");

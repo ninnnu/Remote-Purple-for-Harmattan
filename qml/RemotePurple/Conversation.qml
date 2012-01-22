@@ -32,7 +32,9 @@ Page {
 
     ListView {
         id: conversationView
-        anchors.fill: parent
+        // anchors.fill: parent
+        height: parent.height - 40
+        width: parent.width
         model: CurrentConvMessages
         delegate: conversationDelegate
         Component.onCompleted: positionViewAtEnd();
@@ -55,8 +57,8 @@ Page {
                 horizontalCenter: parent.horizontalCenter
                 verticalCenter: parent.verticalCenter
             }
-            id: msgInput
-            width: parent.width - 20
+            id: msg_input
+            width: parent.width
             font.pixelSize: 20;
             color: "#4b4b4b"
             text: ""
@@ -67,9 +69,21 @@ Page {
         id: commonTools
         visible: true
         ToolIcon {
+            id: menuIcon
             platformIconId: "toolbar-view-menu"
             anchors.right: (parent === undefined) ? undefined : parent.right
             onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close()
+        }
+        ToolIcon {
+            id: sendIcon
+            platformIconId: "toolbar-send-chat"
+            anchors.right: (parent === undefined) ? undefined : parent.right
+            anchors.top: menuIcon.bottom
+            onClicked: {
+                RPClient.sendIM(msg_input.text);
+                msg_input.text = "";
+                msg_input.closeSoftwareInputPanel();
+            }
         }
     }
     Menu {
@@ -78,11 +92,17 @@ Page {
         MenuLayout {
             MenuItem {
                 text: qsTr("Show buddylist");
-                onClicked: pageStack.replace(Qt.resolvedUrl("BuddyList.qml"));
+                onClicked: {
+                    pageStack.replace(Qt.resolvedUrl("BuddyList.qml"));
+                    msg_input.closeSoftwareInputPanel();
+                }
             }
             MenuItem {
                 text: qsTr("Current conversations");
-                 onClicked: pageStack.replace(Qt.resolvedUrl("Conversations.qml"));
+                 onClicked: {
+                     pageStack.replace(Qt.resolvedUrl("Conversations.qml"));
+                     msg_input.closeSoftwareInputPanel();
+                 }
             }
         }
     }
