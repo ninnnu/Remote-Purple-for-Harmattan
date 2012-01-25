@@ -18,3 +18,6 @@ Conversation: http://ninnnu.kuism.at/mobile-rp-conv.png
 == Requirements ==
 * Maemo Harmattan / MeeGo-device. ATM desktop Qt probably works, too, since Qt Mobility isn't really used.
 * Google Protobuf-library.
+
+== Licence ==
+GNU GPLv3
