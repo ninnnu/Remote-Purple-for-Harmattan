@@ -1,0 +1,20 @@
+Remote Purple is a client/server-combo for using Pidgin remotely.
+Server is available at https://github.com/ninnnu/Remote-Purple
+
+Remote Purple for Harmattan is client for N9(50).
+
+== Features ==
+Supported:
+* Show buddylist
+* Show conversations and their messages
+* Send/receive new messages.
+
+Closing conversations isn't supported (yet).
+
+== Screenshots ==
+Buddylist: http://ninnnu.kuism.at/rpqt-blist.png
+Conversation: http://ninnnu.kuism.at/mobile-rp-conv.png
+
+== Requirements ==
+* Maemo Harmattan / MeeGo-device. ATM desktop Qt probably works, too, since Qt Mobility isn't really used.
+* Google Protobuf-library.
