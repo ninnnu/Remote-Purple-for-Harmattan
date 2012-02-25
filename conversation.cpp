@@ -4,6 +4,14 @@ Conversation::Conversation(int id, ContactItem* partner, Account* account, QObje
     ListItem(parent), id_(id), partner_(partner), messages_(), account_(account)
 {
     messages_ = new ListModel(new Message);
+    newConvVibra_.setAttackIntensity(0.1);
+    newConvVibra_.setAttackTime(250);
+    newConvVibra_.setIntensity(0.7);
+    newConvVibra_.setDuration(500);
+    newConvVibra_.start();
+
+    newMesgVibra_.setIntensity(0.5);
+    newMesgVibra_.setDuration(300);
 }
 
 Conversation::~Conversation() {
@@ -17,6 +25,7 @@ ListModel* Conversation::getMessages() {
 }
 
 void Conversation::addMessage(QString message, QString sender, int timestamp, bool sent){
+    newMesgVibra_.start();
     if(timestamp == 0) {
         timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
     }

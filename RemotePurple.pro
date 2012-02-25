@@ -6,7 +6,7 @@ DEPLOYMENTFOLDERS = folder_01
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
-symbian:TARGET.UID3 = 0xE63204A2
+#symbian:TARGET.UID3 = 0xE63204A2
 
 # Smart Installer package's UID
 # This UID is from the protected range and therefore the package will
@@ -20,8 +20,8 @@ symbian:TARGET.CAPABILITY += NetworkServices
 
 # If your application uses the Qt Mobility libraries, uncomment the following
 # lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
+CONFIG += mobility feedback
+MOBILITY += feedback
 
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 # CONFIG += qdeclarative-boostable
@@ -57,19 +57,3 @@ HEADERS += \
     contactitem.h \
     message.h \
     settings.h
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

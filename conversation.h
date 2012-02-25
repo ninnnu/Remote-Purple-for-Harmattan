@@ -6,6 +6,7 @@
 #include <QVariant>
 #include <QDateTime>
 
+#include <QFeedbackHapticsEffect>
 class Conversation; // Prototype
 
 #include "listmodel.h"
@@ -49,6 +50,8 @@ private:
     ListModel* messages_;
     Account* account_;
 
+    QTM_NAMESPACE::QFeedbackHapticsEffect newConvVibra_;
+    QTM_NAMESPACE::QFeedbackHapticsEffect newMesgVibra_;
 };
 
 #endif // CONVERSATION_H
