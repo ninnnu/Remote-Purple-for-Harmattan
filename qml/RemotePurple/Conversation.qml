@@ -1,6 +1,5 @@
 import QtQuick 1.1
 import com.nokia.meego 1.0
-// import RPConversation 1.0
 
 Page {
     Component {
@@ -37,7 +36,14 @@ Page {
         width: parent.width
         model: CurrentConvMessages
         delegate: conversationDelegate
-        Component.onCompleted: positionViewAtEnd();
+        Component.onCompleted: {
+            positionViewAtEnd();
+            CurrentConversation.setRead();
+        }
+        onCountChanged: {
+            positionViewAtEnd();
+            CurrentConversation.setRead();
+        }
     }
 
     Rectangle {

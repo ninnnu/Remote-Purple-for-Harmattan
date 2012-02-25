@@ -22,7 +22,8 @@ public:
       IdRole = Qt::UserRole+1,
       PartnerNameRole,
       AccountNameRole,
-      MessagesRole
+      MessagesRole,
+      UnreadRole
     };
 
     Conversation(QObject *parent = 0) : ListItem(parent) {}
@@ -38,7 +39,10 @@ public:
     inline int convID() const { return id_; }
     QString partnerName() const;
     QString accountName() const;
+    bool unread() const;
+
     ListModel* getMessages();
+    Q_INVOKABLE void setRead();
 
 signals:
     void DataChanged();
@@ -49,6 +53,7 @@ private:
     ContactItem* partner_;
     ListModel* messages_;
     Account* account_;
+    bool unread_;
 
     QTM_NAMESPACE::QFeedbackHapticsEffect newConvVibra_;
     QTM_NAMESPACE::QFeedbackHapticsEffect newMesgVibra_;

@@ -9,6 +9,7 @@ Page {
             id: conversationDelegateRectangle
             height: conversationDelegateText.height * 1.5 + blueline.height
             width: parent.width
+            color: unread ? "lightblue" : "white"
             Rectangle {
                 id: blueline
                 width: parent.width

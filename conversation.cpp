@@ -1,7 +1,7 @@
 #include "conversation.h"
 
 Conversation::Conversation(int id, ContactItem* partner, Account* account, QObject *parent) :
-    ListItem(parent), id_(id), partner_(partner), messages_(), account_(account)
+    ListItem(parent), id_(id), partner_(partner), messages_(), account_(account), unread_(false)
 {
     messages_ = new ListModel(new Message);
     newConvVibra_.setAttackIntensity(0.1);
@@ -30,6 +30,9 @@ void Conversation::addMessage(QString message, QString sender, int timestamp, bo
         timestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
     }
     messages_->appendRow(new Message(message, sender, timestamp, sent, this));
+    if(sent == false) {
+        unread_ = true;
+    }
     emit DataChanged();
 }
 
@@ -40,6 +43,7 @@ QHash<int, QByteArray> Conversation::roleNames() const
   names[PartnerNameRole] = "partnerName";
   names[AccountNameRole] = "accountName";
   names[MessagesRole] = "messages";
+  names[UnreadRole] = "unread";
   return names;
 }
 
@@ -52,6 +56,8 @@ QVariant Conversation::data(int role) const
     return partnerName();
   case AccountNameRole:
     return accountName();
+  case UnreadRole:
+    return unread();
   default:
     return QVariant();
   }
@@ -63,4 +69,13 @@ QString Conversation::accountName() const {
 
 QString Conversation::partnerName() const {
     return partner_->name();
+}
+
+void Conversation::setRead() {
+    unread_ = false;
+}
+
+bool Conversation::unread() const {
+    qDebug() << unread_;
+    return unread_;
 }

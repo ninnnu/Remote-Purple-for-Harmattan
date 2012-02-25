@@ -267,6 +267,7 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
                     }
                     conv->addMessage(QString(message.message().c_str()), QString(message.sender().c_str()), timestamp, message.sent());
                 }
+                conv->setRead();
                 conversations_[conversation.conversationid()] = conv;
                 Conversationlist_->appendRow(conv);
                 break;
