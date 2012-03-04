@@ -8,6 +8,7 @@ Supported:
 * Show buddylist
 * Show conversations and their messages
 * Send/receive new messages.
+* Device-wide notifications for new messages
 
 Closing conversations isn't supported (yet).
 

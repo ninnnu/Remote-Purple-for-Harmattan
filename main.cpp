@@ -5,12 +5,15 @@
 #include <QDeclarativeContext>
 #include "qmlapplicationviewer.h"
 
+#include <MComponentData>
+
 #include "rpclient.h"
 #include "settings.h"
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     QScopedPointer<QApplication> app(createApplication(argc, argv));
+    MComponentData::createInstance(argc, argv);
     RPClient rp;
     Settings settings;
 

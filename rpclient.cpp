@@ -21,9 +21,9 @@ bool RPClient::connectTo(QString host, QString password) {
     connect(sock, SIGNAL(connected()), this, SLOT(authenticate()));
     sock->connectToHost(addr, 7890);
     connect(sock, SIGNAL(readyRead()), this, SLOT(listen()));
-    pingtimer_ = new QTimer(this);
+    pingtimer_ = new QTM_NAMESPACE::QSystemAlignedTimer(this);
+    pingtimer_->start(300000, 600000); // 5-10min
     connect(pingtimer_, SIGNAL(timeout()), this, SLOT(sendping()));
-    pingtimer_->start(300000); // 300k milliseconds = 5min.
     timeSincePong_ = QDateTime::currentMSecsSinceEpoch() / 1000;
     // connect(sock, SIGNAL(error(QAbstractSocket::SocketError));
     return true;
@@ -166,6 +166,15 @@ void RPClient::listen() {
         im.ParseFromArray(payloadBA, payloadBA.size());
         conversations_.value(im.conversation())->addMessage(QString(im.message().c_str()), QString(im.sender().c_str()), NULL, im.sent());
         emit newIM(im.conversation());
+
+        if(im.sent() == false) {
+            QString msg = QString(im.message().c_str());
+            msg.remove(QRegExp("<[^>]*>")); // Basic HTML removal
+            MNotification notification(MNotification::ImEvent, QString(im.sender().c_str()), msg);
+            // notification.setImage("icon-m-common-done");
+            notification.publish();
+        }
+
         return;
     }
     if(rectype == "BuddyState") {
@@ -277,6 +286,8 @@ void RPClient::parseStatus_(const purple::Status& pb_status) {
 }
 
 void RPClient::sendping() {
-
+    if((QDateTime::currentMSecsSinceEpoch() / 1000) - timeSincePong_ >= 900) {
+        qDebug() << "Over 15min without pong. Do something useful here.";
+    }
     send("Ping");
 }

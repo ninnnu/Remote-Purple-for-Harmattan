@@ -6,7 +6,9 @@
 #include <QString>
 #include <QTcpSocket>
 #include <QDeclarativeContext>
-#include <QTimer> // Ping the server
+#include <QSystemAlignedTimer> // Ping the server
+
+#include <MNotification>
 
 // Prototypes
 class RPClient;
@@ -58,7 +60,7 @@ private:
     QString sockPayload_;
     QByteArray sockPayloadBA_;
 
-    QTimer* pingtimer_;
+    QTM_NAMESPACE::QSystemAlignedTimer* pingtimer_;
     int timeSincePong_;
 
     QMap<int, Account*> accounts_;
